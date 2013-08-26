@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="bootstrapDemoApp" id="top">
+<head>
+    <meta charset="utf-8">
+    <title>Angular directives for Twitter's Bootstrap</title>
+    <meta name="description" content="AngularJS (Angular) native directives for Twitter Bootstrap. Small footprint (5kB gzipped!), no 3rd party JS dependencies (jQuery, bootstrap JS) required! Widgets: Accordion, Alert, Buttons, Carousel, Collapse, Datepicker, Dropdown Toggle, Modal, Pagination, Popover, Progressbar, Rating, Tabs, Timepicker, Tooltip, Typeahead, ">
+    <meta name="google-site-verification" content="7lc5HyceLDqpV_6oNHteYFfxDJH7-S3DwnJKtNUKcRg" />
+
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js"></script>
+    <script src="ui-bootstrap-tpls-0.6.0-SNAPSHOT.js"></script>
+    <script src="assets/plunker.js"></script>
+    <script src="assets/app.js"></script>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="assets/rainbow.css"/>
+    <link rel="stylesheet" href="assets/demo.css"/>
+
+    <link rel="author" href="https://github.com/angular-ui/bootstrap/graphs/contributors">
+</head>
+<body class="ng-cloak" ng-controller="MainCtrl">
+<div role="main">
+    <div class="container">
+      <section id="typeahead">
+        <div class="page-header">
+          <h1>Typeahead<small>
+              (<a target="_blank" href="https://github.com/angular-ui/bootstrap/tree/master/src/typeahead">ui.bootstrap.typeahead</a>)
+          </small></h1>
+        </div>
+        <div class="row">
+            <div class="span6">
+                <div class='container-fluid' ng-controller="TypeaheadCtrl">
+    <pre>Model: {{selected| json}}</pre>
+    <input type="text" ng-model="selected" typeahead="state for state in states | filter:$viewValue | limitTo:8" tonfocus>
+</div>
+            </div>
+            <div class="span6">
+                <p>Typeahead is a AngularJS version of <a href="http://twitter.github.com/bootstrap/javascript.html#typeahead">Twitter Bootstrap typeahead plugin</a>.
+This directive can be used to quickly create elegant typeheads with any form text input.</p>
+
+<p>It is very well integrated into the AngularJS as it uses subset of the
+<a href="http://docs.angularjs.org/api/ng.directive:select">select directive</a> syntax, which is very flexible. Supported expressions:</p>
+
+<ul>
+<li><em>label</em> for <em>value</em> in <em>sourceArray</em></li>
+<li><em>select</em> as <em>label</em> for <em>value</em> in <em>sourceArray</em></li>
+</ul>
+
+<p>The <code>sourceArray</code> expression can use a special <code>$viewValue</code> variable that corresponds to a value entered inside input by a user.</p>
+
+<p>Also this directive works with promises and it means that you can retrieve matches using the <code>$http</code> service with minimal effort.</p>
+
+<p>The typeahead directives provide several attributes:</p>
+
+<ul>
+<li><p><code>ng-model</code> <i class="icon-eye-open"></i>
+:
+Assignable angular expression to data-bind to</p></li>
+<li><p><code>typeahead</code> <i class="icon-eye-open"></i>
+:
+Comprehension Angular expression (see <a href="http://docs.angularjs.org/api/ng.directive:select">select directive</a>)</p></li>
+<li><p><code>typeahead-editable</code> <i class="icon-eye-open"></i>
+<em>(Defaults: true)</em> :
+Should it restrict model values to the ones selected from the popup only ?</p></li>
+<li><p><code>typeahead-input-formatter</code> <i class="icon-eye-open"></i>
+<em>(Defaults: undefined)</em> :
+Format the ng-model result after selection</p></li>
+<li><p><code>typeahead-loading</code> <i class="icon-eye-open"></i>
+<em>(Defaults: angular.noop)</em> :
+Binding to a variable that indicates if matches are being retrieved asynchronously</p></li>
+<li><p><code>typeahead-min-length</code> <i class="icon-eye-open"></i>
+<em>(Defaults: 1)</em> :
+Minimal no of characters that needs to be entered before typeahead kicks-in</p></li>
+<li><p><code>typeahead-on-select</code> <i class="icon-eye-open"></i>
+<em>(Defaults: null)</em> :
+A callback executed when a match is selected</p></li>
+<li><p><code>typeahead-template-url</code> <i class="icon-eye-open"></i>
+:
+Set custom item template</p></li>
+<li><p><code>typeahead-wait-ms</code> <i class="icon-eye-open"></i>
+<em>(Defaults: 0)</em> :
+Minimal wait time after last character typed before typehead kicks-in</p></li>
+</ul>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="span12" ng-controller="PlunkerCtrl">
+                <div class="pull-right">
+                    <button class="btn btn-info" id="plunk-btn" ng-click="edit('1.0.5', '2.3.1', '0.6.0-SNAPSHOT', 'typeahead')"><i class="icon-edit icon-white"></i> Edit in plunker</button>
+                </div>
+                <tabset>
+                    <tab heading="Markup">
+                        <div plunker-content="markup">
+                            <pre ng-non-bindable><code data-language="html">&lt;div class=&#x27;container-fluid&#x27; ng-controller=&quot;TypeaheadCtrl&quot;&gt;
+    &lt;pre&gt;Model: {{selected| json}}&lt;/pre&gt;
+    &lt;input type=&quot;text&quot; ng-model=&quot;selected&quot; typeahead=&quot;state for state in states | filter:$viewValue | limitTo:8&quot;&gt;
+&lt;/div&gt;</code></pre>
+                        </div>
+                    </tab>
+                    <tab heading="JavaScript">
+                        <div plunker-content="javascript">
+                            <pre ng-non-bindable><code data-language="javascript">function TypeaheadCtrl($scope) {
+
+  $scope.selected = undefined;
+  $scope.states = [&#x27;Alabama&#x27;, &#x27;Alaska&#x27;, &#x27;Arizona&#x27;, &#x27;Arkansas&#x27;, &#x27;California&#x27;, &#x27;Colorado&#x27;, &#x27;Connecticut&#x27;, &#x27;Delaware&#x27;, &#x27;Florida&#x27;, &#x27;Georgia&#x27;, &#x27;Hawaii&#x27;, &#x27;Idaho&#x27;, &#x27;Illinois&#x27;, &#x27;Indiana&#x27;, &#x27;Iowa&#x27;, &#x27;Kansas&#x27;, &#x27;Kentucky&#x27;, &#x27;Louisiana&#x27;, &#x27;Maine&#x27;, &#x27;Maryland&#x27;, &#x27;Massachusetts&#x27;, &#x27;Michigan&#x27;, &#x27;Minnesota&#x27;, &#x27;Mississippi&#x27;, &#x27;Missouri&#x27;, &#x27;Montana&#x27;, &#x27;Nebraska&#x27;, &#x27;Nevada&#x27;, &#x27;New Hampshire&#x27;, &#x27;New Jersey&#x27;, &#x27;New Mexico&#x27;, &#x27;New York&#x27;, &#x27;North Dakota&#x27;, &#x27;North Carolina&#x27;, &#x27;Ohio&#x27;, &#x27;Oklahoma&#x27;, &#x27;Oregon&#x27;, &#x27;Pennsylvania&#x27;, &#x27;Rhode Island&#x27;, &#x27;South Carolina&#x27;, &#x27;South Dakota&#x27;, &#x27;Tennessee&#x27;, &#x27;Texas&#x27;, &#x27;Utah&#x27;, &#x27;Vermont&#x27;, &#x27;Virginia&#x27;, &#x27;Washington&#x27;, &#x27;West Virginia&#x27;, &#x27;Wisconsin&#x27;, &#x27;Wyoming&#x27;];
+}</code></pre>
+                        </div>
+                    </tab>
+                </tabset>
+            </div>
+        </div>
+      </section>
+      <script>function TypeaheadCtrl($scope) {
+
+  $scope.selected = undefined;
+  $scope.states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Dakota', 'North Carolina', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'];
+}
+angular.module('ui.bootstrap').directive('tonfocus', function () {
+  return {
+    require: ['typeahead', 'ngModel'],
+    link: function (scope, element, attr, ctrls) {
+      element.bind('focus', function () {
+        ctrls[0].getMatchesAsync(ctrls[1].$viewValue);
+        scope.$apply();
+      });
+    }
+  };
+})
+</script>
+    
+  </div>
+</div>
+<footer class="footer">
+    <div class="container">
+        <p>Designed and built by <a href="https://github.com/angular-ui?tab=members" target="_blank">Angular-UI team</a> and <a href="https://github.com/angular-ui/bootstrap/graphs/contributors" target="_blank">contributors</a>.</p>
+        <p>Code licensed under <a href="https://github.com/angular-ui/bootstrap/blob/master/LICENSE">MIT License</a>.</p>
+        <p><a href="https://github.com/angular-ui/bootstrap/issues?state=open">Issues</a></p>
+    </div>
+</footer>
+<script src="assets/rainbow.js"></script>
+<script src="assets/rainbow-generic.js"></script>
+<script src="assets/rainbow-javascript.js"></script>
+<script src="assets/rainbow-html.js"></script>
+
+</body>
+</html>

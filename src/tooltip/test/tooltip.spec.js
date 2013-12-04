@@ -105,7 +105,7 @@ describe('tooltip', function() {
     elm.trigger( 'mouseenter' );
     expect( elm.attr( 'alt' ) ).toBe( scope.alt );
 
-    ttScope = angular.element( elmBody.children()[1] ).scope();
+    ttScope = angular.element( elmBody.children()[1] ).isolateScope();
     expect( ttScope.placement ).toBe( 'top' );
     expect( ttScope.content ).toBe( scope.tooltipMsg );
 
@@ -303,7 +303,7 @@ describe('tooltip', function() {
       var match = false;
 
       angular.forEach(angular.element.cache, function (item) {
-        if (item.data && item.data.$scope === tooltipScope) {
+        if (item.data && item.data.$isolateScope === tooltipScope) {
           match = true;
         }
       });

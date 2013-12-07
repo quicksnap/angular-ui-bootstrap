@@ -46,9 +46,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //minimal wait time after last character typed before typehead kicks-in
       var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
 
-      //should it restrict model values to the ones selected from the popup only?
-      var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
-
       //binding to a variable that indicates if matches are being retrieved asynchronously
       var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
 
@@ -166,18 +163,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           resetMatches();
         }
 
-        if (isEditable) {
-          return inputValue;
-        } else {
-          if (!inputValue) {
-            // Reset in case user had typed something previously.
-            modelCtrl.$setValidity('editable', true);
-            return inputValue;
-          } else {
-            modelCtrl.$setValidity('editable', false);
-            return undefined;
-          }
-        }
+        return inputValue;
       });
 
       modelCtrl.$formatters.push(function (modelValue) {
@@ -336,6 +322,36 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       }
     };
   }])
+
+  .directive('typeaheadEditable', [
+    function () {
+      return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, element, attrs, ngModelCtrl) {
+
+          //should it restrict model values to the ones selected from the popup only?
+          var isEditable = scope.$eval(attrs.typeaheadEditable) !== false;
+
+          // push instead of unshift as this has to come after the parser added by typeahead
+          ngModelCtrl.$parsers.push(function (inputValue) {
+            if (isEditable) {
+              return inputValue;
+            } else {
+              if (!inputValue) {
+                // Reset in case user had typed something previously.
+                ngModelCtrl.$setValidity('editable', true);
+                return inputValue;
+              } else {
+                ngModelCtrl.$setValidity('editable', false);
+                return undefined;
+              }
+            }
+          });
+        }
+      };
+    }
+  ])
 
   .filter('typeaheadHighlight', function() {
 

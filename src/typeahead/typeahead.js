@@ -78,7 +78,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
                 locals[parserResult.itemName] = matches[i];
                 taScope.matches.push({
                   label: parserResult.viewMapper($scope, locals),
-                  model: matches[i]
+                  model: parserResult.modelMapper($scope, locals),
+                  item: matches[i]
                 });
               }
 
@@ -216,18 +217,18 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       scope.select = function (activeIdx) {
         //called from within the $digest() cycle
-        var locals = {};
-        var model, item;
+        var selectedMatch = scope.matches[activeIdx],
+          item  = selectedMatch.item,
+          model = selectedMatch.model,
+          label = selectedMatch.label;
 
-        locals[parserResult.itemName] = item = scope.matches[activeIdx].model;
-        model = parserResult.modelMapper(originalScope, locals);
         $setModelValue(originalScope, model);
         modelCtrl.$setValidity('editable', true);
 
         onSelectCallback(originalScope, {
           $item: item,
           $model: model,
-          $label: parserResult.viewMapper(originalScope, locals)
+          $label: label
         });
 
         resetMatches();

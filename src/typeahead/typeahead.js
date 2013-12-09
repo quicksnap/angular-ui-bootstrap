@@ -89,15 +89,13 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
               taScope.position = appendToBody ? $position.offset($element) : $position.position($element);
               taScope.position = $position.position($element);
               taScope.position.top = taScope.position.top + $element.prop('offsetHeight');
-
+              isLoadingSetter($scope, false);
             } else {
               resetMatches();
             }
-            isLoadingSetter($scope, false);
           }
         }, function(){
           resetMatches();
-          isLoadingSetter($scope, false);
         });
       };
 

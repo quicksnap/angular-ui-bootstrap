@@ -42,6 +42,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       //INTERNAL VARIABLES
 
+      //model setter executed upon match selection
+      var $setModelValue = $parse($attrs.ngModel).assign;
+
       //expressions used by typeahead
       var parserResult = typeaheadParser.parse($attrs.typeahead);
 
@@ -49,6 +52,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //with typeahead-specific data (matches, query etc.)
       var taScope = this.taScope = $scope.$new();
       taScope.typeaheadCtrl = this;
+
+      // Called with model, itemDetails (model, {item, model, label})
+      ctrl.selectListeners = [];
 
       ctrl.setQuery = function (query) {
         ctrl.query = query;
@@ -100,6 +106,18 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         });
       };
 
+      ctrl.select = function (match) {
+        $setModelValue($scope, match.model);
+        resetMatches();
+
+        for (var i = 0; i < ctrl.selectListeners.length; i++) {
+          ctrl.selectListeners[i](match.model, match);
+        }
+
+        //return focus to the input element if a mach was selected via a mouse click event
+        $element[0].focus();
+      };
+
       resetMatches();
 
       //pop-up element used to display matches
@@ -108,7 +126,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         typeaheadCtrl: 'typeaheadCtrl',
         matches: 'matches',
         active: 'activeIdx',
-        select: 'select(activeIdx)',
+        select: 'typeaheadCtrl.select(matches[activeIdx])',
         query: 'query',
         position: 'position'
       });
@@ -149,17 +167,11 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //minimal wait time after last character typed before typehead kicks-in
       var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
 
-      //a callback executed when a match is selected
-      var onSelectCallback = $parse(attrs.typeaheadOnSelect);
-
       var inputFormatter = attrs.typeaheadInputFormatter ? $parse(attrs.typeaheadInputFormatter) : undefined;
 
       var appendToBody =  attrs.typeaheadAppendToBody ? $parse(attrs.typeaheadAppendToBody) : false;
 
       //INTERNAL VARIABLES
-
-      //model setter executed upon match selection
-      var $setModelValue = $parse(attrs.ngModel).assign;
 
       //expressions used by typeahead
       var parserResult = typeaheadParser.parse(attrs.typeahead);
@@ -215,28 +227,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         }
       });
 
-      scope.select = function (activeIdx) {
-        //called from within the $digest() cycle
-        var selectedMatch = scope.matches[activeIdx],
-          item  = selectedMatch.item,
-          model = selectedMatch.model,
-          label = selectedMatch.label;
-
-        $setModelValue(originalScope, model);
-        modelCtrl.$setValidity('editable', true);
-
-        onSelectCallback(originalScope, {
-          $item: item,
-          $model: model,
-          $label: label
-        });
-
-        resetMatches();
-
-        //return focus to the input element if a mach was selected via a mouse click event
-        element[0].focus();
-      };
-
       //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
       element.bind('keydown', function (evt) {
 
@@ -257,7 +247,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
         } else if (evt.which === 13 || evt.which === 9) {
           scope.$apply(function () {
-            scope.select(scope.activeIdx);
+            typeaheadCtrl.select(scope.matches[scope.activeIdx]);
           });
 
         } else if (evt.which === 27) {
@@ -352,12 +342,40 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
     };
   }])
 
+  .directive('typeaheadOnSelect', [
+             '$parse',
+    function ($parse) {
+      return {
+        restrict: 'A',
+        require: 'typeahead',
+        link: function (scope, element, attrs, typeaheadCtrl) {
+
+          //a callback executed when a match is selected
+          var onSelectCallback = $parse(attrs.typeaheadOnSelect);
+
+          typeaheadCtrl.selectListeners.push(function (model, match) {
+            onSelectCallback(scope, {
+              $item: match.item,
+              $model: match.model,
+              $label: match.label
+            });
+          });
+
+        }
+      };
+    }
+  ])
+
+
   .directive('typeaheadEditable', [
     function () {
       return {
         restrict: 'A',
-        require: 'ngModel',
-        link: function (scope, element, attrs, ngModelCtrl) {
+        require: ['ngModel', 'typeahead'],
+        link: function (scope, element, attrs, controllers) {
+
+          var ngModelCtrl = controllers[0],
+              typeaheadCtrl = controllers[1];
 
           //should it restrict model values to the ones selected from the popup only?
           var isEditable = scope.$eval(attrs.typeaheadEditable) !== false;
@@ -376,6 +394,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
                 return undefined;
               }
             }
+          });
+
+          typeaheadCtrl.selectListeners.push(function () {
+            ngModelCtrl.$setValidity('editable', true);
           });
         }
       };

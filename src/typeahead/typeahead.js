@@ -183,8 +183,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
     }
   ])
 
-  .directive('typeahead', ['$compile', '$parse', '$q', '$timeout', '$document', 'typeaheadParser',
-    function ($compile, $parse, $q, $timeout, $document, typeaheadParser) {
+  .directive('typeahead', ['$compile', '$parse', '$document', 'typeaheadParser',
+    function ($compile, $parse, $document, typeaheadParser) {
 
   var HOT_KEYS = [9, 13, 27, 38, 40];
 
@@ -199,9 +199,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       //SUPPORTED ATTRIBUTES (OPTIONS)
 
-      //minimal wait time after last character typed before typehead kicks-in
-      var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
-
       var inputFormatter = attrs.typeaheadInputFormatter ? $parse(attrs.typeaheadInputFormatter) : undefined;
 
       var appendToBody =  attrs.typeaheadAppendToBody ? $parse(attrs.typeaheadAppendToBody) : false;
@@ -211,24 +208,12 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //expressions used by typeahead
       var parserResult = typeaheadParser.parse(attrs.typeahead);
 
-      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
-      var timeoutPromise;
-
       //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
       //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
       modelCtrl.$parsers.unshift(function (inputValue) {
 
         if (inputValue) {
-          if (waitTime > 0) {
-            if (timeoutPromise) {
-              $timeout.cancel(timeoutPromise);//cancel previous timeout
-            }
-            timeoutPromise = $timeout(function () {
-              typeaheadCtrl.setQuery(inputValue);
-            }, waitTime);
-          } else {
-            typeaheadCtrl.setQuery(inputValue);
-          }
+          typeaheadCtrl.setQuery(inputValue);
         } else {
           resetMatches();
         }
@@ -389,6 +374,37 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
               return value;
             }
           });
+
+        }
+      };
+    }
+  ])
+
+  .directive('typeaheadWaitMs', [
+             '$timeout',
+    function ($timeout) {
+      return {
+        restrict: 'A',
+        require: 'typeahead',
+        link: function (scope, element, attrs, typeaheadCtrl) {
+
+          //minimal wait time after last character typed before typehead kicks-in
+          var waitTime = scope.$eval(attrs.typeaheadWaitMs) || 0;
+
+          if (waitTime > 0) {
+            //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
+            var timeoutPromise;
+
+            typeaheadCtrl.queryParsers.push(function (value) {
+              if (timeoutPromise) {
+                $timeout.cancel(timeoutPromise);//cancel previous timeout
+              }
+              timeoutPromise = $timeout(function () {
+                return value;
+              }, waitTime);
+              return timeoutPromise;
+            });
+          }
 
         }
       };

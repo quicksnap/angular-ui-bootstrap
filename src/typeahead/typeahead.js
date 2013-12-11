@@ -120,6 +120,21 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         $element[0].focus();
       };
 
+      ctrl._selectActive = function (activeIdx) {
+        if (typeof activeIdx != 'undefined') {
+          ctrl.activeIdx = activeIdx;
+        }
+        ctrl.select(ctrl.matches[ctrl.activeIdx]);
+      };
+
+      ctrl._nextMatch = function () {
+        ctrl.activeIdx = (ctrl.activeIdx + 1) % ctrl.matches.length;
+      };
+
+      ctrl._prevMatch = function () {
+        ctrl.activeIdx = (ctrl.activeIdx ? ctrl.activeIdx : ctrl.matches.length) - 1;
+      };
+
       resetMatches();
 
       //pop-up element used to display matches
@@ -128,7 +143,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         typeaheadCtrl: 'typeaheadCtrl',
         matches: 'typeaheadCtrl.matches',
         active: 'typeaheadCtrl.activeIdx',
-        select: 'typeaheadCtrl.select(typeaheadCtrl.matches[activeIdx])',
+        select: 'typeaheadCtrl._selectActive(activeIdx)',
         query: 'typeaheadCtrl.query',
         position: 'typeaheadCtrl.position'
       });
@@ -238,16 +253,16 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         evt.preventDefault();
 
         if (evt.which === 40) {
-          typeaheadCtrl.activeIdx = (typeaheadCtrl.activeIdx + 1) % typeaheadCtrl.matches.length;
+          typeaheadCtrl._nextMatch();
           scope.$digest();
 
         } else if (evt.which === 38) {
-          typeaheadCtrl.activeIdx = (typeaheadCtrl.activeIdx ? typeaheadCtrl.activeIdx : typeaheadCtrl.matches.length) - 1;
+          typeaheadCtrl._prevMatch();
           scope.$digest();
 
         } else if (evt.which === 13 || evt.which === 9) {
           scope.$apply(function () {
-            typeaheadCtrl.select(typeaheadCtrl.matches[typeaheadCtrl.activeIdx]);
+            typeaheadCtrl._selectActive();
           });
 
         } else if (evt.which === 27) {

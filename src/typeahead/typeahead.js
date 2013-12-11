@@ -199,9 +199,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       //SUPPORTED ATTRIBUTES (OPTIONS)
 
-      //minimal no of characters that needs to be entered before typeahead kicks-in
-      var minSearch = originalScope.$eval(attrs.typeaheadMinLength) || 1;
-
       //minimal wait time after last character typed before typehead kicks-in
       var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
 
@@ -221,7 +218,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
       modelCtrl.$parsers.unshift(function (inputValue) {
 
-        if (inputValue && inputValue.length >= minSearch) {
+        if (inputValue) {
           if (waitTime > 0) {
             if (timeoutPromise) {
               $timeout.cancel(timeoutPromise);//cancel previous timeout
@@ -376,6 +373,27 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       }
     };
   }])
+
+  .directive('typeaheadMinLength', [
+    function () {
+      return {
+        restrict: 'A',
+        require: 'typeahead',
+        link: function (scope, element, attrs, typeaheadCtrl) {
+
+          //minimal no of characters that needs to be entered before typeahead kicks-in
+          var minSearch = scope.$eval(attrs.typeaheadMinLength) || 1;
+
+          typeaheadCtrl.queryParsers.push(function (value) {
+            if (value.length >= minSearch) {
+              return value;
+            }
+          });
+
+        }
+      };
+    }
+  ])
 
   .directive('typeaheadOnSelect', [
              '$parse',

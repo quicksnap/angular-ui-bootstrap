@@ -56,6 +56,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       // Called with model, itemDetails (model, {item, model, label})
       ctrl.selectListeners = [];
 
+      // Methods that are called on query similar to ngModelController.$parsers but supports
+      // promises.
+      ctrl.queryParsers = [];
+
       // Check this value to see if it's the latest query
       var lastQuery = null;
 
@@ -65,10 +69,25 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           resetMatches();
           return;
         }
-        ctrl.getMatches(query);
+
+        var queryPromise = $q.when(query);
+
+        for (var i = 0; i < ctrl.queryParsers.length; i++) {
+          queryPromise = queryPromise.then(ctrl.queryParsers[i]);
+        }
+
+        queryPromise.then(function (value) {
+          // async query
+          if (query === lastQuery && typeof value !== 'undefined') {
+            ctrl.getMatches(value);
+          }
+        });
       };
 
+      var lastMatchInputValue = null;
+
       ctrl.getMatches = function(inputValue) {
+        lastMatchInputValue = inputValue;
 
         var locals = {$viewValue: inputValue};
         isLoadingSetter($scope, true);
@@ -76,7 +95,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
           //it might happen that several async queries were in progress if a user were typing fast
           //but we are interested only in responses that correspond to the current view value
-          if (inputValue === lastQuery) {
+          if (inputValue === lastMatchInputValue) {
             if (matches.length > 0) {
 
               ctrl.activeIdx = 0;
@@ -154,6 +173,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       function resetMatches() {
         lastQuery = null;
+        lastMatchInputValue = null;
         ctrl.matches = [];
         ctrl.activeIdx = -1;
         isLoadingSetter($scope, false);

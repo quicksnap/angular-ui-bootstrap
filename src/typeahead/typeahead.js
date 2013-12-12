@@ -29,8 +29,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
   };
 }])
 
-  .directive('typeahead', ['$compile', '$parse', '$q', '$timeout', '$document', '$position', 'typeaheadParser',
-    function ($compile, $parse, $q, $timeout, $document, $position, typeaheadParser) {
+  .directive('typeahead', ['$compile', '$parse', '$q', '$timeout', '$position', 'typeaheadParser',
+    function ($compile, $parse, $q, $timeout, $position, typeaheadParser) {
 
   var HOT_KEYS = [9, 13, 27, 38, 40];
 
@@ -257,22 +257,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         }
       });
 
-      element.bind('blur', function (evt) {
+      element.bind('blur', function () {
         hasFocus = false;
-      });
-
-      // Keep reference to click handler to unbind it.
-      var dismissClickHandler = function (evt) {
-        if (element[0] !== evt.target) {
-          resetMatches();
-          scope.$digest();
-        }
-      };
-
-      $document.bind('click', dismissClickHandler);
-
-      originalScope.$on('$destroy', function(){
-        $document.unbind('click', dismissClickHandler);
+        resetMatches();
+        scope.$digest();
       });
 
       element.after($compile(popUpEl)(scope));

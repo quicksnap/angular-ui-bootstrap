@@ -363,8 +363,8 @@ describe('typeahead tests', function () {
 
       changeInputValueTo(element, 'b');
 
-      $document.find('body').click();
-      $scope.$digest();
+      // When clicking outside typeahead, typeahead loses focus.
+      inputEl.blur();
 
       expect(element).toBeClosed();
     });

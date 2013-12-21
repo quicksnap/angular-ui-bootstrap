@@ -1,13 +1,13 @@
 describe('collapse directive', function () {
 
-  var scope, $compile, $timeout, $transition;
+  var scope, $compile, $timeout, $animate;
 
   beforeEach(module('ui.bootstrap.collapse'));
-  beforeEach(inject(function(_$rootScope_, _$compile_, _$timeout_, _$transition_) {
+  beforeEach(inject(function(_$rootScope_, _$compile_, _$timeout_, _$animate_) {
     scope = _$rootScope_;
     $compile = _$compile_;
     $timeout = _$timeout_;
-    $transition = _$transition_;
+    $animate = _$animate_;
   }));
 
   var element;
@@ -21,11 +21,13 @@ describe('collapse directive', function () {
     element.remove();
   });
 
+  // ngAnimate handles skipping of initial animations through
+  // https://github.com/angular/angular.js/commit/cc5846073e57ef190182026d7e5a8e2770d9b770
   it('should be hidden on initialization if isCollapsed = true without transition', function() {
     scope.isCollapsed = true;
     scope.$digest();
     //No animation timeout here
-    expect(element.height()).toBe(0);
+    expect(element.hasClass('in')).toBe(false);
   });
 
   it('should collapse if isCollapsed = true with animation on subsequent use', function() {
@@ -34,6 +36,7 @@ describe('collapse directive', function () {
     scope.isCollapsed = true;
     scope.$digest();
     $timeout.flush();
+    expect(element.hasClass('in')).toBe(false);
     expect(element.height()).toBe(0);
   });
 
@@ -41,7 +44,7 @@ describe('collapse directive', function () {
     scope.isCollapsed = false;
     scope.$digest();
     //No animation timeout here
-    expect(element.height()).not.toBe(0);
+    expect(element.hasClass('in')).toBe(true);
   });
 
   it('should expand if isCollapsed = false with animation on subsequent use', function() {
@@ -52,6 +55,7 @@ describe('collapse directive', function () {
     scope.isCollapsed = false;
     scope.$digest();
     $timeout.flush();
+    expect(element.hasClass('in')).toBe(true);
     expect(element.height()).not.toBe(0);
   });
 

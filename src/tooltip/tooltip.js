@@ -108,8 +108,11 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
       return {
         restrict: 'EA',
         scope: true,
-        link: function link ( scope, element, attrs ) {
-          var tooltip = $compile( template )( scope );
+        compile: function (tElem, tAttrs) {
+          var tooltipLinker = $compile( template );
+
+          return function link ( scope, element, attrs ) {
+          var tooltip;
           var transitionTimeout;
           var popupTimeout;
           var appendToBody = angular.isDefined( options.appendToBody ) ? options.appendToBody : false;
@@ -153,6 +156,10 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
                 ttWidth,
                 ttHeight,
                 ttPosition;
+
+            // There can only be one tooltip element per directive shown at once.
+            removeTooltip();
+            tooltip = tooltipLinker(scope);
 
             // Don't show empty tooltips.
             if ( ! scope.tt_content ) {
@@ -234,11 +241,16 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
             // need to wait for it to expire beforehand.
             // FIXME: this is a placeholder for a port of the transitions library.
             if ( scope.tt_animation ) {
-              transitionTimeout = $timeout(function () {
-                tooltip.remove();
-              }, 500);
+              transitionTimeout = $timeout(removeTooltip, 500);
             } else {
+              removeTooltip();
+            }
+          }
+
+          function removeTooltip() {
+            if (tooltip) {
               tooltip.remove();
+              tooltip = null;
             }
           }
 
@@ -312,10 +324,9 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
             $timeout.cancel( transitionTimeout );
             $timeout.cancel( popupTimeout );
             unregisterTriggers();
-            tooltip.remove();
-            tooltip.unbind();
-            tooltip = null;
+            removeTooltip();
           });
+        };
         }
       };
     };

@@ -319,18 +319,12 @@ describe('tooltip', function() {
 
       elm = elmBody.find('input');
       elmScope = elm.scope();
+      elm.trigger('fooTrigger');
       tooltipScope = elmScope.$$childTail;
     }));
 
-    it( 'should not contain a cached reference', function() {
-      expect( inCache() ).toBeTruthy();
-      elmScope.$destroy();
-      expect( inCache() ).toBeFalsy();
-    });
-
     it( 'should not contain a cached reference when visible', inject( function( $timeout ) {
       expect( inCache() ).toBeTruthy();
-      elm.trigger('fooTrigger');
       elmScope.$destroy();
       expect( inCache() ).toBeFalsy();
     }));

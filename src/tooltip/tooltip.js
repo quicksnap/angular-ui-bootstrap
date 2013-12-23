@@ -261,15 +261,18 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
             scope.tt_placement = angular.isDefined( val ) ? val : options.placement;
           });
 
-          attrs.$observe(prefix + 'Animation', function (val) {
-            var shouldAnimate = val !== 'false';
-            scope.tt_animation = angular.isDefined(val) ? shouldAnimate : options.animation;
-          });
-
           attrs.$observe( prefix+'PopupDelay', function ( val ) {
             var delay = parseInt( val, 10 );
             scope.tt_popupDelay = ! isNaN(delay) ? delay : options.popupDelay;
           });
+
+          if (attrs[prefix + 'Animation']) {
+            scope.$watch(attrs[prefix + 'Animation'], function (val) {
+              scope.tt_animation = angular.isDefined(val) ? !!val : options.animation;
+            });
+          } else {
+            scope.tt_animation = options.animation;
+          }
 
           var unregisterTriggers = function() {
             if (hasRegisteredTriggers) {

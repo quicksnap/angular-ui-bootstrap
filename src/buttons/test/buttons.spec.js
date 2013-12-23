@@ -136,5 +136,20 @@ describe('buttons', function () {
       expect(btns.eq(0)).not.toHaveClass('active');
       expect(btns.eq(1)).toHaveClass('active');
     });
+
+    it('should do nothing on active button', function () {
+      var btns = compileButtons('<button ng-model="model" btn-radio="1">click1</button><button ng-model="model" btn-radio="2">click2</button>', $scope);
+      expect($scope.model).toBeUndefined();
+
+      btns.eq(0).click();
+      expect($scope.model).toEqual(1);
+      expect(btns.eq(0)).toHaveClass('active');
+      expect(btns.eq(1)).not.toHaveClass('active');
+
+      btns.eq(0).click();
+      expect($scope.model).toEqual(1);
+      expect(btns.eq(0)).toHaveClass('active');
+      expect(btns.eq(1)).not.toHaveClass('active');
+    });
   });
 });

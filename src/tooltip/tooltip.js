@@ -262,7 +262,8 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
           });
 
           attrs.$observe(prefix + 'Animation', function (val) {
-            scope.tt_animation = angular.isDefined(val) ? !!val : options.animation;
+            var shouldAnimate = val !== 'false';
+            scope.tt_animation = angular.isDefined(val) ? shouldAnimate : options.animation;
           });
 
           attrs.$observe( prefix+'PopupDelay', function ( val ) {

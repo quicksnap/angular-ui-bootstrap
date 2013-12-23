@@ -261,18 +261,20 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
             scope.tt_placement = angular.isDefined( val ) ? val : options.placement;
           });
 
-          attrs.$observe( prefix+'PopupDelay', function ( val ) {
-            var delay = parseInt( val, 10 );
-            scope.tt_popupDelay = ! isNaN(delay) ? delay : options.popupDelay;
-          });
+          angular.forEach(['Animation', 'PopupDelay'], function (opt) {
+            var optVarName = opt[0].toLowerCase() + opt.substr(1),
+              scopeVarName = 'tt_' + optVarName,
+              attrName = prefix + opt,
+              attrVal = attrs[attrName];
 
-          if (attrs[prefix + 'Animation']) {
-            scope.$watch(attrs[prefix + 'Animation'], function (val) {
-              scope.tt_animation = angular.isDefined(val) ? !!val : options.animation;
-            });
-          } else {
-            scope.tt_animation = options.animation;
-          }
+            if (attrVal) {
+              scope.$watch(attrVal, function (val) {
+                scope[scopeVarName] = angular.isDefined(val) ? val : options[optVarName];
+              });
+            } else {
+              scope[scopeVarName] = options[optVarName];
+            }
+          });
 
           var unregisterTriggers = function() {
             if (hasRegisteredTriggers) {

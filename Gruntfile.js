@@ -12,6 +12,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-conventional-changelog');
   grunt.loadNpmTasks('grunt-ngdocs');
 
+  // Make sure npm dependencies are satisfied
+  runNpmInstall();
+
   // Project configuration.
   grunt.util.linefeed = '\n';
 
@@ -389,6 +392,16 @@ module.exports = function(grunt) {
       }
     });
   });
+
+  function runNpmInstall() {
+    // travis has done this already
+    if (process.env.TRAVIS) {
+      return;
+    }
+
+    var sh = require('shelljs');
+    sh.exec('npm install');
+  }
 
   return grunt;
 };

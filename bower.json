@@ -1,0 +1,8 @@
+{
+  "name": "UI Bootstrap",
+  "devDependencies": {
+    "angular": "~1.0.8",
+    "angular-mocks": "~1.0.8",
+    "jquery": "~1.8.2"
+  }
+}

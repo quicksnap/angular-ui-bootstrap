@@ -206,7 +206,7 @@ module.exports = function(grunt) {
 
   //register before and after test tasks so we've don't have to change cli
   //options on the goole's CI server
-  grunt.registerTask('before-test', ['enforce', 'jshint', 'html2js']);
+  grunt.registerTask('before-test', ['enforce', 'jshint', 'html2js', 'bower']);
   grunt.registerTask('after-test', ['build', 'copy']);
 
   //Rename our watch task to 'delta', then make actual 'watch'
@@ -391,6 +391,18 @@ module.exports = function(grunt) {
         grunt.fatal(result.output);
       }
     });
+  });
+
+  grunt.registerTask('bower', 'Install Bower packages.', function () {
+    var bower = require('bower');
+    var done = this.async();
+
+    bower.commands.install()
+      .on('log', function (result) {
+        grunt.log.ok('bower: ' + result.id + ' ' + result.data.endpoint.name);
+      })
+      .on('error', grunt.fail.warn.bind(grunt.fail))
+      .on('end', done);
   });
 
   function runNpmInstall() {

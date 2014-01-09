@@ -53,6 +53,19 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       var taScope = this.taScope = $scope.$new();
       taScope.typeaheadCtrl = this;
 
+      ctrl.inputFormatter = function (scope, locals) {
+        var candidateViewValue, emptyViewValue;
+
+        //it might happen that we don't have enough info to properly render input value
+        //we need to check for this situation and simply return model value if we can't apply custom formatting
+        locals[ctrl.parserResult.itemName] = locals.$model;
+        candidateViewValue = ctrl.parserResult.viewMapper(scope, locals);
+        locals[ctrl.parserResult.itemName] = undefined;
+        emptyViewValue = ctrl.parserResult.viewMapper(scope, locals);
+
+        return candidateViewValue !== emptyViewValue ? candidateViewValue : locals.$model;
+      };
+
       // Called with model, itemDetails (model, {item, model, label})
       ctrl.selectListeners = [];
 
@@ -199,8 +212,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       //SUPPORTED ATTRIBUTES (OPTIONS)
 
-      var inputFormatter = attrs.typeaheadInputFormatter ? $parse(attrs.typeaheadInputFormatter) : undefined;
-
       var appendToBody =  attrs.typeaheadAppendToBody ? $parse(attrs.typeaheadAppendToBody) : false;
 
       //INTERNAL VARIABLES
@@ -220,25 +231,11 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       modelCtrl.$formatters.push(function (modelValue) {
 
-        var candidateViewValue, emptyViewValue;
-        var locals = {};
+        var locals = {
+          $model: modelValue
+        };
 
-        if (inputFormatter) {
-
-          locals['$model'] = modelValue;
-          return inputFormatter(originalScope, locals);
-
-        } else {
-
-          //it might happen that we don't have enough info to properly render input value
-          //we need to check for this situation and simply return model value if we can't apply custom formatting
-          locals[typeaheadCtrl.parserResult.itemName] = modelValue;
-          candidateViewValue = typeaheadCtrl.parserResult.viewMapper(originalScope, locals);
-          locals[typeaheadCtrl.parserResult.itemName] = undefined;
-          emptyViewValue = typeaheadCtrl.parserResult.viewMapper(originalScope, locals);
-
-          return candidateViewValue!== emptyViewValue ? candidateViewValue : modelValue;
-        }
+        return typeaheadCtrl.inputFormatter(originalScope, locals);
       });
 
       //bind keyboard events: arrows up(38) / down(40), enter(13) and tab(9), esc(27)
@@ -465,6 +462,21 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           typeaheadCtrl.selectListeners.push(function () {
             ngModelCtrl.$setValidity('editable', true);
           });
+        }
+      };
+    }
+  ])
+
+  .directive('typeaheadInputFormatter', [
+             '$parse',
+    function ($parse) {
+      return {
+        restrict: 'A',
+        require: 'typeahead',
+        link: function (scope, element, attrs, typeaheadCtrl) {
+          if (attrs.typeaheadInputFormatter) {
+            typeaheadCtrl.inputFormatter = $parse(attrs.typeaheadInputFormatter);
+          }
         }
       };
     }

@@ -36,7 +36,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       var ctrl = this;
 
       //binding to a variable that indicates if matches are being retrieved asynchronously
-      var isLoadingSetter = $parse($attrs.typeaheadLoading).assign || angular.noop;
+      ctrl.setIsLoading = angular.noop;
 
       var appendToBody =  $attrs.typeaheadAppendToBody ? $parse($attrs.typeaheadAppendToBody) : false;
 
@@ -103,7 +103,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         lastMatchInputValue = inputValue;
 
         var locals = {$viewValue: inputValue};
-        isLoadingSetter($scope, true);
+        ctrl.setIsLoading($scope, true);
         $q.when(ctrl.parserResult.source($scope, locals)).then(function(matches) {
 
           //it might happen that several async queries were in progress if a user were typing fast
@@ -130,7 +130,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
               //due to other elements being rendered
               ctrl.position = appendToBody ? $position.offset($element) : $position.position($element);
               ctrl.position.top = ctrl.position.top + $element.prop('offsetHeight');
-              isLoadingSetter($scope, false);
+              ctrl.setIsLoading($scope, false);
             } else {
               resetMatches();
             }
@@ -189,7 +189,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         lastMatchInputValue = null;
         ctrl.matches = [];
         ctrl.activeIdx = -1;
-        isLoadingSetter($scope, false);
+        ctrl.setIsLoading($scope, false);
       }
 
       ctrl.popUpEl = $compile(popUpEl)(taScope);
@@ -477,6 +477,19 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           if (attrs.typeaheadInputFormatter) {
             typeaheadCtrl.inputFormatter = $parse(attrs.typeaheadInputFormatter);
           }
+        }
+      };
+    }
+  ])
+
+  .directive('typeaheadLoading', [
+             '$parse',
+    function ($parse) {
+      return {
+        restrict: 'A',
+        require: 'typeahead',
+        link: function (scope, element, attrs, typeaheadCtrl) {
+          typeaheadCtrl.setIsLoading = $parse(attrs.typeaheadLoading).assign || angular.noop;
         }
       };
     }

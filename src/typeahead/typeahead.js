@@ -46,7 +46,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       var $setModelValue = $parse($attrs.ngModel).assign;
 
       //expressions used by typeahead
-      var parserResult = typeaheadParser.parse($attrs.typeahead);
+      ctrl.parserResult = typeaheadParser.parse($attrs.typeahead);
 
       //create a child scope for the typeahead directive so we are not polluting original scope
       //with typeahead-specific data (matches, query etc.)
@@ -91,7 +91,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
         var locals = {$viewValue: inputValue};
         isLoadingSetter($scope, true);
-        $q.when(parserResult.source($scope, locals)).then(function(matches) {
+        $q.when(ctrl.parserResult.source($scope, locals)).then(function(matches) {
 
           //it might happen that several async queries were in progress if a user were typing fast
           //but we are interested only in responses that correspond to the current view value
@@ -103,10 +103,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
               //transform labels
               for(var i=0; i<matches.length; i++) {
-                locals[parserResult.itemName] = matches[i];
+                locals[ctrl.parserResult.itemName] = matches[i];
                 ctrl.matches.push({
-                  label: parserResult.viewMapper($scope, locals),
-                  model: parserResult.modelMapper($scope, locals),
+                  label: ctrl.parserResult.viewMapper($scope, locals),
+                  model: ctrl.parserResult.modelMapper($scope, locals),
                   item: matches[i]
                 });
               }
@@ -205,9 +205,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       //INTERNAL VARIABLES
 
-      //expressions used by typeahead
-      var parserResult = typeaheadParser.parse(attrs.typeahead);
-
       //plug into modelCtrl pipeline to open a typeahead on view changes
       modelCtrl._$setViewValue = modelCtrl.$setViewValue;
       modelCtrl.$setViewValue = function (inputValue) {
@@ -235,10 +232,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
           //it might happen that we don't have enough info to properly render input value
           //we need to check for this situation and simply return model value if we can't apply custom formatting
-          locals[parserResult.itemName] = modelValue;
-          candidateViewValue = parserResult.viewMapper(originalScope, locals);
-          locals[parserResult.itemName] = undefined;
-          emptyViewValue = parserResult.viewMapper(originalScope, locals);
+          locals[typeaheadCtrl.parserResult.itemName] = modelValue;
+          candidateViewValue = typeaheadCtrl.parserResult.viewMapper(originalScope, locals);
+          locals[typeaheadCtrl.parserResult.itemName] = undefined;
+          emptyViewValue = typeaheadCtrl.parserResult.viewMapper(originalScope, locals);
 
           return candidateViewValue!== emptyViewValue ? candidateViewValue : modelValue;
         }

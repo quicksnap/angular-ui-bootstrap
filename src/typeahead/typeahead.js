@@ -208,9 +208,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //expressions used by typeahead
       var parserResult = typeaheadParser.parse(attrs.typeahead);
 
-      //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
-      //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
-      modelCtrl.$parsers.unshift(function (inputValue) {
+      //plug into modelCtrl pipeline to open a typeahead on view changes
+      modelCtrl._$setViewValue = modelCtrl.$setViewValue;
+      modelCtrl.$setViewValue = function (inputValue) {
 
         if (inputValue) {
           typeaheadCtrl.setQuery(inputValue);
@@ -218,8 +218,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           resetMatches();
         }
 
-        return inputValue;
-      });
+        return modelCtrl._$setViewValue(inputValue);
+      };
 
       modelCtrl.$formatters.push(function (modelValue) {
 

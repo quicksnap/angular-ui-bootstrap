@@ -48,24 +48,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //expressions used by typeahead
       ctrl.parserResult = typeaheadParser.parse($attrs.typeahead);
 
-      //create a child scope for the typeahead directive so we are not polluting original scope
-      //with typeahead-specific data (matches, query etc.)
-      var taScope = this.taScope = $scope.$new();
-      taScope.typeaheadCtrl = this;
-
-      ctrl.inputFormatter = function (scope, locals) {
-        var candidateViewValue, emptyViewValue;
-
-        //it might happen that we don't have enough info to properly render input value
-        //we need to check for this situation and simply return model value if we can't apply custom formatting
-        locals[ctrl.parserResult.itemName] = locals.$model;
-        candidateViewValue = ctrl.parserResult.viewMapper(scope, locals);
-        locals[ctrl.parserResult.itemName] = undefined;
-        emptyViewValue = ctrl.parserResult.viewMapper(scope, locals);
-
-        return candidateViewValue !== emptyViewValue ? candidateViewValue : locals.$model;
-      };
-
       // Called with model, itemDetails (model, {item, model, label})
       ctrl.selectListeners = [];
 
@@ -140,6 +122,19 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         });
       };
 
+      ctrl.inputFormatter = function (scope, locals) {
+        var candidateViewValue, emptyViewValue;
+
+        //it might happen that we don't have enough info to properly render input value
+        //we need to check for this situation and simply return model value if we can't apply custom formatting
+        locals[ctrl.parserResult.itemName] = locals.$model;
+        candidateViewValue = ctrl.parserResult.viewMapper(scope, locals);
+        locals[ctrl.parserResult.itemName] = undefined;
+        emptyViewValue = ctrl.parserResult.viewMapper(scope, locals);
+
+        return candidateViewValue !== emptyViewValue ? candidateViewValue : locals.$model;
+      };
+
       ctrl.select = function (match) {
         $setModelValue($scope, match.model);
         resetMatches();
@@ -151,6 +146,16 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         //return focus to the input element if a mach was selected via a mouse click event
         $element[0].focus();
       };
+
+      resetMatches();
+
+      function resetMatches() {
+        lastQuery = null;
+        lastMatchInputValue = null;
+        ctrl.matches = [];
+        ctrl.activeIdx = -1;
+        ctrl.setIsLoading($scope, false);
+      }
 
       ctrl._selectActive = function (activeIdx) {
         if (typeof activeIdx != 'undefined') {
@@ -167,8 +172,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         ctrl.activeIdx = (ctrl.activeIdx ? ctrl.activeIdx : ctrl.matches.length) - 1;
       };
 
-      resetMatches();
-
       //pop-up element used to display matches
       var popUpEl = angular.element('<div typeahead-popup></div>');
       popUpEl.attr({
@@ -184,13 +187,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         popUpEl.attr('template-url', $attrs.typeaheadTemplateUrl);
       }
 
-      function resetMatches() {
-        lastQuery = null;
-        lastMatchInputValue = null;
-        ctrl.matches = [];
-        ctrl.activeIdx = -1;
-        ctrl.setIsLoading($scope, false);
-      }
+      //create a child scope for the typeahead directive so we are not polluting original scope
+      //with typeahead-specific data (matches, query etc.)
+      var taScope = this.taScope = $scope.$new();
+      taScope.typeaheadCtrl = this;
 
       ctrl.popUpEl = $compile(popUpEl)(taScope);
     }

@@ -262,7 +262,9 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               if (tooltip) {
                 removeTooltip();
               }
-              tooltip = tooltipLinker(scope, function () {});
+              // Make sure to use a new child scope every time as watchers leak into scope.
+              // If linked DOM is removed, watchers from that DOM isn't removed.
+              tooltip = tooltipLinker(scope.$new(), function () {});
 
               // Get contents rendered into the tooltip
               scope.$digest();

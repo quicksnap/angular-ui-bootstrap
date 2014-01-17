@@ -148,7 +148,7 @@ describe('tooltip', function() {
     elm.trigger( 'mouseenter' );
 
     ttScope = angular.element( elmBody.children()[1] ).isolateScope();
-    expect( ttScope.$parent ).toBe( elmScope );
+    expect( ttScope.$parent.$parent ).toBe( elmScope );
 
     elm.trigger( 'mouseleave' );
 
@@ -156,7 +156,7 @@ describe('tooltip', function() {
     elm.trigger( 'mouseenter' );
 
     ttScope = angular.element( elmBody.children()[1] ).isolateScope();
-    expect( ttScope.$parent ).toBe( elmScope );
+    expect( ttScope.$parent.$parent ).toBe( elmScope );
 
     elm.trigger( 'mouseleave' );
   }));
@@ -326,13 +326,13 @@ describe('tooltip', function() {
   });
 
   describe('cleanup', function () {
-    var elmBody, elm, elmScope, tooltipScope;
+    var elmBody, elm, elmScope, tooltipChildScope;
 
     function inCache() {
       var match = false;
 
       angular.forEach(angular.element.cache, function (item) {
-        if (item.data && item.data.$isolateScope === tooltipScope) {
+        if (item.data && item.data.$scope === tooltipChildScope) {
           match = true;
         }
       });
@@ -349,7 +349,7 @@ describe('tooltip', function() {
       elm = elmBody.find('input');
       elmScope = elm.scope();
       elm.trigger('fooTrigger');
-      tooltipScope = elmScope.$$childTail;
+      tooltipChildScope = elmScope.$$childTail;
     }));
 
     it( 'should not contain a cached reference when visible', inject( function( $timeout ) {

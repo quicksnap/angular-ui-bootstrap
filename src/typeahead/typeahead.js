@@ -55,6 +55,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       // promises.
       ctrl.queryParsers = [];
 
+      // FIXME: Remove when switching to isolate scope
+      ctrl.mouseIsOver = false;
+
       // Check this value to see if it's the latest query
       var lastQuery = null;
 
@@ -180,7 +183,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         active: 'typeaheadCtrl.activeIdx',
         select: 'typeaheadCtrl._selectActive(activeIdx)',
         query: 'typeaheadCtrl.query',
-        position: 'typeaheadCtrl.position'
+        position: 'typeaheadCtrl.position',
+        mouseisover: 'typeaheadCtrl.mouseIsOver'
       });
       //custom item template
       if (angular.isDefined($attrs.typeaheadTemplateUrl)) {
@@ -270,7 +274,10 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       });
 
       element.bind('blur', function () {
-        resetMatches();
+        if (!typeaheadCtrl.mouseIsOver) {
+          resetMatches();
+          scope.$digest();
+        }
       });
 
       // Keep reference to click handler to unbind it.
@@ -309,6 +316,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
         query:'=',
         active:'=',
         position:'=',
+        mouseIsOver:'=mouseisover',
         select:'&'
       },
       replace:true,

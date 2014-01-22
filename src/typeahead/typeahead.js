@@ -29,7 +29,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
   };
 }])
 
-  .controller('typeaheadController', [
+  .controller('TypeaheadController', [
              '$scope', '$compile', '$q', '$attrs', '$parse', '$element', '$position', 'typeaheadParser',
     function ($scope ,  $compile ,  $q ,  $attrs ,  $parse ,  $element ,  $position ,  typeaheadParser) {
 
@@ -203,7 +203,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
   return {
     require: ['typeahead', 'ngModel'],
-    controller: 'typeaheadController',
+    controller: 'TypeaheadController',
     link:function (originalScope, element, attrs, controllers) {
 
       var typeaheadCtrl = controllers[0],

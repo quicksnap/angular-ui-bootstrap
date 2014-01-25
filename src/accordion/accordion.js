@@ -1,4 +1,4 @@
-angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
+angular.module('ui.bootstrap.accordion', [])
 
 .constant('accordionConfig', {
   closeOthers: true
@@ -129,4 +129,64 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       });
     }
   };
-});
+})
+
+/**
+ * Animations based on addition and removal of `in` class
+ * This requires the bootstrap classes to be present in order to take advantage
+ * of the animation classes.
+ */
+.animation('.panel-collapse', function () {
+  return {
+    beforeAddClass: function (element, className, done) {
+      if (className == 'in') {
+        element
+          .removeClass('collapse')
+          .addClass('collapsing')
+          .css({height: '0'});
+      }
+      done();
+    },
+    addClass: function (element, className, done) {
+      if (className == 'in') {
+        element
+          .css({height: element[0].scrollHeight + 'px'})
+          .removeClass('collapsing')
+          // FIXME awaiting: https://github.com/angular/angular.js/pull/5984
+          .on('$animate:close', function closeFn() {
+            element
+              .css({height: 'auto'});
+            element.off('$animate:close', closeFn);
+          });
+      }
+      done();
+    },
+    beforeRemoveClass: function (element, className, done) {
+      if (className == 'in') {
+        element
+          // initially all panel collapse have the collapse class, this removal
+          // prevents the animation from jumping to collapsed state
+          .removeClass('collapse')
+          .addClass('collapsing')
+          .css({height: element[0].scrollHeight + 'px'});
+      }
+      done();
+    },
+    removeClass: function (element, className, done) {
+      if (className == 'in') {
+        element
+          .css({height: '0'})
+          .removeClass('collapsing')
+          // FIXME awaiting: https://github.com/angular/angular.js/pull/5984
+          .on('$animate:close', function closeFn() {
+            element
+              .addClass('collapse');
+            element.off('$animate:close', closeFn);
+          });
+      }
+      done();
+    }
+  };
+})
+
+;

@@ -7,7 +7,9 @@
 *
 */
 angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
-.controller('CarouselController', ['$scope', '$timeout', '$transition', function ($scope, $timeout, $transition) {
+.controller('CarouselController', [
+         '$scope', '$timeout', '$animate',
+function ($scope ,  $timeout ,  $animate) {
   var self = this,
     slides = self.slides = [],
     currentIndex = -1,
@@ -17,19 +19,16 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
   var destroyed = false;
   /* direction: "prev" or "next" */
   self.select = function(nextSlide, direction) {
-    var nextIndex = slides.indexOf(nextSlide);
+    var nextIndex = slides.indexOf(nextSlide),
+        directionClass;
     //Decide direction if it's not given
     if (direction === undefined) {
       direction = nextIndex > currentIndex ? 'next' : 'prev';
     }
+    directionClass = direction == 'next' ? 'left' : 'right';
+
     if (nextSlide && nextSlide !== self.currentSlide) {
-      if ($scope.$currentTransition) {
-        $scope.$currentTransition.cancel();
-        //Timeout so ng-class in template has time to fix classes for finished slide
-        $timeout(goNext);
-      } else {
         goNext();
-      }
     }
     function goNext() {
       // Scope has been destroyed, stop here.
@@ -38,25 +37,21 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
       if (self.currentSlide && angular.isString(direction) && !$scope.noTransition && nextSlide.$element) {
         //We shouldn't do class manip in here, but it's the same weird thing bootstrap does. need to fix sometime
         nextSlide.$element.addClass(direction);
-        var reflow = nextSlide.$element[0].offsetWidth; //force reflow
 
-        //Set all other slides to stop doing their stuff for the new transition
-        angular.forEach(slides, function(slide) {
-          angular.extend(slide, {direction: '', entering: false, leaving: false, active: false});
+        var next = nextSlide.$element,
+          current = self.currentSlide.$element;
+        $scope.$currentTransition = true;
+        $animate.addClass(nextSlide.$element, directionClass, function () {
+          next
+            .removeClass(directionClass + ' ' + direction)
+            .addClass('active');
+          $scope.$currentTransition = false;
         });
-        angular.extend(nextSlide, {direction: direction, active: true, entering: true});
-        angular.extend(self.currentSlide||{}, {direction: direction, leaving: true});
-
-        $scope.$currentTransition = $transition(nextSlide.$element, {});
-        //We have to create new pointers inside a closure since next & current will change
-        (function(next,current) {
-          $scope.$currentTransition.then(
-            function(){ transitionDone(next, current); },
-            function(){ transitionDone(next, current); }
-          );
-        }(nextSlide, self.currentSlide));
+        $animate.addClass(current, directionClass, function () {
+          current.removeClass(directionClass + ' active');
+        });
       } else {
-        transitionDone(nextSlide, self.currentSlide);
+        nextSlide.$element.addClass('active');
       }
       self.currentSlide = nextSlide;
       currentIndex = nextIndex;
@@ -64,8 +59,6 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
       restartTimer();
     }
     function transitionDone(next, current) {
-      angular.extend(next, {direction: '', active: true, leaving: false, entering: false});
-      angular.extend(current||{}, {direction: '', active: false, leaving: false, entering: false});
       $scope.$currentTransition = null;
     }
   };

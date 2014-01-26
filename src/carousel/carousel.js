@@ -7,7 +7,7 @@
 *
 */
 angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
-.controller('CarouselController', ['$scope', '$timeout', '$transition', function ($scope, $timeout, $transition) {
+.controller('CarouselController', ['$scope', '$timeout', '$animate', function ($scope, $timeout, $animate) {
   var self = this,
     slides = self.slides = [],
     currentIndex = -1,
@@ -23,15 +23,27 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
       direction = nextIndex > currentIndex ? 'next' : 'prev';
     }
     if (nextSlide && nextSlide !== self.currentSlide) {
-      if ($scope.$currentTransition) {
-        $scope.$currentTransition.cancel();
-        //Timeout so ng-class in template has time to fix classes for finished slide
-        $timeout(goNext);
-      } else {
+      if (!$scope.$currentTransition) {
         goNext();
       }
     }
     function goNext() {
+      if (self.currentSlide) {
+        var next = nextSlide,
+            current = self.currentSlide;
+        $animate.addClass(nextSlide.$element, 'active');
+        $animate.removeClass(current.$element, 'active');
+        // $animate.addClass(nextSlide.$element, 'left', function () {
+        //   next.$element.removeClass('next left').addClass('active');
+        // });
+        // current.$element.addClass('active');
+        // $animate.addClass(self.currentSlide.$element, 'left', function () {
+        //   current.$element.removeClass('active left');
+        // });
+      }
+      self.currentSlide = nextSlide;
+      currentIndex = nextIndex;
+      /*
       // Scope has been destroyed, stop here.
       if (destroyed) { return; }
       //If we have a slide to transition from and we have a transition type and we're allowed, go
@@ -44,17 +56,14 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
         angular.forEach(slides, function(slide) {
           angular.extend(slide, {direction: '', entering: false, leaving: false, active: false});
         });
-        angular.extend(nextSlide, {direction: direction, active: true, entering: true});
-        angular.extend(self.currentSlide||{}, {direction: direction, leaving: true});
+        angular.extend(nextSlide, {direction: direction, entering: true});
+        angular.extend(self.currentSlide||{}, {direction: direction, active: true});
 
-        $scope.$currentTransition = $transition(nextSlide.$element, {});
-        //We have to create new pointers inside a closure since next & current will change
-        (function(next,current) {
-          $scope.$currentTransition.then(
-            function(){ transitionDone(next, current); },
-            function(){ transitionDone(next, current); }
-          );
-        }(nextSlide, self.currentSlide));
+        var current = self.currentSlide;
+        nextSlide.$element.on('$animate:close', function closeFn() {
+          transitionDone(nextSlide, current);
+          nextSlide.$element.off('$animate:close', closeFn);
+        });
       } else {
         transitionDone(nextSlide, self.currentSlide);
       }
@@ -62,6 +71,7 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
       currentIndex = nextIndex;
       //every time you change slides, reset the timer
       restartTimer();
+    */
     }
     function transitionDone(next, current) {
       angular.extend(next, {direction: '', active: true, leaving: false, entering: false});
@@ -298,4 +308,88 @@ function CarouselDemoCtrl($scope) {
       });
     }
   };
-});
+})
+
+.animation('.item', [
+         '$animate',
+function ($animate) {
+  return {
+    beforeAddClass: function (element, className, done) {
+      if (className == 'active') {
+        var stopped = false;
+        element.addClass('next');
+        $animate.addClass(element, 'left', function () {
+          if (!stopped) {
+            element.removeClass('next' + ' ' + 'left');
+          }
+          done();
+        });
+        return function () {
+          stopped = true;
+        };
+      }
+      done();
+    },
+    beforeRemoveClass: function (element, className, done) {
+      if (className == 'active') {
+        var stopped = false;
+        $animate.addClass(element, 'left', function () {
+          if (!stopped) {
+            element.removeClass('left');
+          }
+          done();
+        });
+        return function () {
+          stopped = true;
+        };
+      }
+      done();
+    }
+  };
+
+/*
+.animation('.item', [
+         '$animate',
+function ($animate) {
+  return {
+    beforeAddClass: function (element, className, done) {
+      if (className == 'prev') {
+        var direction = 'left',
+          next = 'next';
+        var slides = element.parent().children();
+        for (var i = 0; i < slides.length; i++) {
+          if (slides.eq(i).hasClass('active')) {
+            direction = 'left';
+            break;
+          } else if (slides[i] === element[0]) {
+            direction = 'right';
+            next = 'prev';
+            break;
+          }
+        }
+        element.addClass(next);
+        $animate.addClass(element, direction, function () {
+          element.removeClass(next + ' ' + direction);
+          done();
+        });
+        return;
+      }
+      done();
+    },
+    beforeRemoveClass: function (element, className, done) {
+      if (className == 'active') {
+        $animate.addClass(element, 'left', function () {
+          element.removeClass('left');
+          done();
+        });
+        return;
+      }
+      done();
+    }
+  };
+*/
+
+}])
+
+
+;

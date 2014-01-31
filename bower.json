@@ -2,10 +2,10 @@
     "author": {
         "name": "https://github.com/angular-ui/bootstrap/graphs/contributors"
     },
-    "name": "angular-bootstrap",
+    "name": "angular-bootstrap-quicksnap",
     "version": "0.11.0-QUICKSNAP",
     "main": ["./dist/ui-bootstrap-tpls.js"],
     "dependencies": {
         "angular": ">=1"
-    }    
+    }
 }

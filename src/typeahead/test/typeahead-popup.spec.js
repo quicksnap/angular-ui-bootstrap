@@ -48,14 +48,13 @@ describe('typeaheadPopup - result rendering', function () {
 
     scope.matches = ['foo', 'bar', 'baz'];
     scope.active = 1;
-    $rootScope.select = angular.noop;
-    spyOn($rootScope, 'select');
+    $rootScope.typeaheadCtrl = jasmine.createSpyObj('typeaheadCtrl', ['_selectActive']);
 
     var el = $compile('<div><typeahead-popup matches="matches" active="active" select="select(activeIdx)"></typeahead-popup></div>')(scope);
     $rootScope.$digest();
 
     var liElems = el.find('li');
     liElems.eq(2).find('a').trigger('click');
-    expect($rootScope.select).toHaveBeenCalledWith(2);
+    expect($rootScope.typeaheadCtrl._selectActive).toHaveBeenCalledWith(2);
   });
 });

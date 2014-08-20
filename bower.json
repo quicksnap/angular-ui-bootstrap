@@ -3,7 +3,7 @@
         "name": "https://github.com/angular-ui/bootstrap/graphs/contributors"
     },
     "name": "angular-bootstrap-quicksnap",
-    "version": "0.11.0-QUICKSNAP",
+    "version": "0.11.0-QUICKSNAP1",
     "main": ["./dist/ui-bootstrap-tpls.js"],
     "dependencies": {
         "angular": ">=1"

@@ -2,7 +2,7 @@
  * angular-ui-bootstrap
  * http://angular-ui.github.io/bootstrap/
 
- * Version: 0.11.0-SNAPSHOT - 2014-09-12
+ * Version: 0.11.0-SNAPSHOT - 2015-01-13
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
@@ -3248,6 +3248,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       var appendToBody =  $attrs.typeaheadAppendToBody ? $parse($attrs.typeaheadAppendToBody) : false;
 
+      //should first item of matches be highlighted automatically?
+      var autoHighlight = originalScope.$eval($attrs.typeaheadAutoHighlight) !== false;
+
       //INTERNAL VARIABLES
 
       //model setter executed upon match selection
@@ -3301,7 +3304,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           if (inputValue === lastMatchInputValue) {
             if (matches.length > 0) {
 
-              $scope.active = 0;
+              $scope.active = autoHighlight === true ? 0 : -1;
               $scope.matches.length = 0;
 
               //transform labels
@@ -3444,22 +3447,30 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           return;
         }
 
-        evt.preventDefault();
+
 
         if (evt.which === 40) {
+          evt.preventDefault();
           typeaheadCtrl._nextMatch();
           scope.$digest();
 
         } else if (evt.which === 38) {
+          evt.preventDefault();
           typeaheadCtrl._prevMatch();
           scope.$digest();
 
         } else if (evt.which === 13 || evt.which === 9) {
+          if ( scope.active === -1 ) {
+            resetMatches();
+            return;
+          }
+          evt.preventDefault();
           scope.$apply(function () {
             typeaheadCtrl._selectActive();
           });
 
         } else if (evt.which === 27) {
+          evt.preventDefault();
           evt.stopPropagation();
 
           resetMatches();

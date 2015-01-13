@@ -43,6 +43,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       var appendToBody =  $attrs.typeaheadAppendToBody ? $parse($attrs.typeaheadAppendToBody) : false;
 
+      //should first item of matches be highlighted automatically?
+      var autoHighlight = originalScope.$eval($attrs.typeaheadAutoHighlight) !== false;
+
       //INTERNAL VARIABLES
 
       //model setter executed upon match selection
@@ -96,7 +99,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           if (inputValue === lastMatchInputValue) {
             if (matches.length > 0) {
 
-              $scope.active = 0;
+              $scope.active = autoHighlight === true ? 0 : -1;
               $scope.matches.length = 0;
 
               //transform labels
@@ -239,22 +242,30 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
           return;
         }
 
-        evt.preventDefault();
+
 
         if (evt.which === 40) {
+          evt.preventDefault();
           typeaheadCtrl._nextMatch();
           scope.$digest();
 
         } else if (evt.which === 38) {
+          evt.preventDefault();
           typeaheadCtrl._prevMatch();
           scope.$digest();
 
         } else if (evt.which === 13 || evt.which === 9) {
+          if ( scope.active === -1 ) {
+            resetMatches();
+            return;
+          }
+          evt.preventDefault();
           scope.$apply(function () {
             typeaheadCtrl._selectActive();
           });
 
         } else if (evt.which === 27) {
+          evt.preventDefault();
           evt.stopPropagation();
 
           resetMatches();

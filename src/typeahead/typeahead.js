@@ -43,8 +43,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       var appendToBody =  $attrs.typeaheadAppendToBody ? $parse($attrs.typeaheadAppendToBody) : false;
 
-      //should first item of matches be highlighted automatically?
-      var autoHighlight = originalScope.$eval($attrs.typeaheadAutoHighlight) !== false;
+      //should first item of matches be highlighted automatically? (off by default)
+      var autoHighlight = originalScope.$eval($attrs.typeaheadAutoHighlight) === true;
 
       //INTERNAL VARIABLES
 
